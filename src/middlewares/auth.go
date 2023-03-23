@@ -1,18 +1,21 @@
 package middlewares
 
 import (
-	"github.com/dgrijalva/jwt-go"
-	"github.com/gofiber/fiber/v2"
+	//"github.com/dgrijalva/jwt-go"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gofiber/fiber/v2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 const SecretKey = "secret"
 
 type ClaimsWithScope struct {
-	jwt.StandardClaims
+	//jwt.Claims
 	Scope string
+	jwt.RegisteredClaims
 }
 
 func IsAuthenticated(c *fiber.Ctx) error {
@@ -45,7 +48,7 @@ func IsAuthenticated(c *fiber.Ctx) error {
 func GenerateJWT(id uint, scope string) (string, error) {
 	payload := ClaimsWithScope{}
 	payload.Subject = strconv.Itoa(int(id))
-	payload.ExpiresAt = time.Now().Add(time.Hour * 24).Unix()
+	payload.ExpiresAt = jwt.NewNumericDate(time.Unix(time.Now().Add(time.Hour*24).Unix(), 0))
 	payload.Scope = scope
 
 	return jwt.NewWithClaims(jwt.SigningMethodHS256, payload).SignedString([]byte(SecretKey))
